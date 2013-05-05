@@ -1,5 +1,5 @@
 /*!
- * jquery_apps.js v1.0.0
+ * jquery_apps.js v1.0.1
  * http://jquery-apps.appspot.com/
  *
  * Copyright (c) 2012, Splead Inc.
@@ -144,7 +144,14 @@
 	
 	function methodPost( self, api, callback ){
 		
-		$.post( api, self.serialize(), function( response ) {
+		var formObj;
+		if(self[0].nodeName == "FORM"){
+			formObj = self;
+		} else {
+			formObj = $( "form", self );
+		}
+		
+		$.post( api, formObj.serialize(), function( response ) {
 			
 			var result = JSON.parse( response );
 			
@@ -185,7 +192,9 @@
 			
 			var element = data[ id ];
 			
-			if ( element instanceof Array ) {
+			if ( element === null ) {
+				
+			} else if ( element instanceof Array ) {
 				
 				if ( element.length > 0 ) {
 					
@@ -225,7 +234,20 @@
 					
 					var value = element[ key ];
 					
-					if ( value instanceof Array ) {
+					if ( value === null ) {
+						target.each( function() {
+							var html = $( this ).html();
+							if ( html != null ) {
+								var reg1 = new RegExp( "<!-- #"+ elementId + ":" + key + "# -->", "g" );
+								var reg2 = new RegExp( "<!-- %"+ elementId + ":" + key + "% -->", "g" );
+								var reg3 = new RegExp( "#" + elementId + ":" + key + "#", "g" );
+								html = html.replace( reg1, "" );
+								html = html.replace( reg2, "" );
+								html = html.replace( reg3, "" );
+								$( this ).html( html );
+							}
+						});
+					} else if ( value instanceof Array ) {
 						
 						var targetItem = $( "#" + key, target );
 						if ( targetItem.length === 0 ) {
@@ -277,15 +299,15 @@
 						target.each( function() {
 							
 							var html = $( this ).html();
-							var reg1 = new RegExp( "<!-- #"+ elementId + ":" + key + "# -->", "g" );
-							var reg2 = new RegExp( "<!-- %"+ elementId + ":" + key + "% -->", "g" );
-							var reg3 = new RegExp( "#" + elementId + ":" + key + "#", "g" );
 							if ( html !== null ) {
+								var reg1 = new RegExp( "<!-- #"+ elementId + ":" + key + "# -->", "g" );
+								var reg2 = new RegExp( "<!-- %"+ elementId + ":" + key + "% -->", "g" );
+								var reg3 = new RegExp( "#" + elementId + ":" + key + "#", "g" );
 								html = html.replace( reg1, htmlESC( value ) );
 								html = html.replace( reg2, value );
 								html = html.replace( reg3, htmlESC( value ) );
+								$( this ).html( html );
 							}
-							$( this ).html( html );
 						});
 					}
 				}
@@ -293,15 +315,15 @@
 			} else if ( typeof element === "string" || typeof element === "number" ) {
 				
 				var html = target.html();
-				var reg1 = new RegExp( "<!-- #" + elementId + ":value# -->", "g" );
-				var reg2 = new RegExp( "<!-- %" + elementId + ":value% -->", "g" );
-				var reg3 = new RegExp( "#" + elementId + ":value#", "g" );
 				if ( html != null ) {
+					var reg1 = new RegExp( "<!-- #" + elementId + ":value# -->", "g" );
+					var reg2 = new RegExp( "<!-- %" + elementId + ":value% -->", "g" );
+					var reg3 = new RegExp( "#" + elementId + ":value#", "g" );
 					html = html.replace( reg1, htmlESC( element ) );
 					html = html.replace( reg2, element );
 					html = html.replace( reg3, htmlESC( element ) );
+					target.html( html );
 				}
-				target.html( html );
 			}
 		}
 	}
